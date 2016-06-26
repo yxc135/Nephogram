@@ -1,6 +1,6 @@
 package core.schedule.exception;
 
-public class CircularGraphException extends ScheduleFailedException {
+public class CircularGraphException extends Exception {
 
 	private static final long serialVersionUID = 1L;
 

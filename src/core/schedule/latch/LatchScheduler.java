@@ -36,7 +36,7 @@ public class LatchScheduler implements Scheduler<LatchTask<?, ?>> {
 		phaser.bulkRegister(graph.size());
 		Collection<LatchTask<?, ?>> bootstrapTasks = graph.getBootstrapTasks();
 		if (bootstrapTasks.isEmpty()) {
-			throw new CircularGraphException();
+			throw new ScheduleFailedException(new CircularGraphException());
 		}
 		for (LatchTask<?, ?> task : bootstrapTasks) {
 			schedule(task);

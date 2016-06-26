@@ -47,15 +47,27 @@ public abstract class LatchTask<I, O> extends AbstractTask<I, O> {
 	@Override
 	public abstract O executeTask() throws Throwable;
 
-	public void addToUpstream(Collection<LatchTask<?, ?>> tasks) {
+	public void addToUpstream(Collection<? extends LatchTask<?, ?>> tasks) {
 		if (tasks != null) {
 			upstreamTasks.addAll(tasks);
 		}
 	}
 
-	public void addToDownstream(Collection<LatchTask<?, ?>> tasks) {
+	public void addToDownstream(Collection<? extends LatchTask<?, ?>> tasks) {
 		if (tasks != null) {
 			downstreamTasks.addAll(tasks);
+		}
+	}
+
+	public void addToUpstream(LatchTask<?, ?> task) {
+		if (task != null) {
+			upstreamTasks.add(task);
+		}
+	}
+
+	public void addToDownstream(LatchTask<?, ?> task) {
+		if (task != null) {
+			downstreamTasks.add(task);
 		}
 	}
 

@@ -1,15 +1,17 @@
 package tutorial;
 
-import java.util.Collections;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import toolkit.annotation.Task;
+import toolkit.annotation.latch.TaskAnnotationParser;
+import toolkit.annotation.latch.TaskRepository;
 import core.graph.Graph;
 import core.schedule.latch.LatchScheduler;
 import core.schedule.latch.LatchTask;
 
-public class Example1 {
+public class AnnotationUsageExample {
 
 	public static void main(String[] args) throws Exception {
 		ExecutorService executor = Executors.newWorkStealingPool(10);
@@ -32,31 +34,29 @@ public class Example1 {
 		};
 
 		LatchTask<Void, Double> task3 = new LatchTask<Void, Double>(scheduler,
-				"T1", null) {
+				"T3", null) {
+			@Task(id = "T1")
+			private LatchTask<String, Double> task1;
+			@Task(id = "T2")
+			private LatchTask<String, Integer> task2;
+
 			@Override
 			public Double executeTask() throws Throwable {
-				Double result1 = null;
-				Integer result2 = null;
-				for (LatchTask<?, ?> task : upstreamTasks) {
-					if (task.getId().equals("T1")) {
-						result1 = (Double) task.getOutput();
-					} else if (task.getId().equals("T2")) {
-						result2 = (Integer) task.getOutput();
-					}
-				}
+				Double result1 = task1.getOutput();
+				Integer result2 = task2.getOutput();
 				return result1 + result2;
 			}
 		};
 
-		task1.addToDownstream(Collections.singleton(task3));
-		task2.addToDownstream(Collections.singleton(task3));
-		task3.addToUpstream(Collections.singleton(task1));
-		task3.addToUpstream(Collections.singleton(task2));
+		TaskRepository repository = new TaskRepository();
+		repository.addTask(task1);
+		repository.addTask(task2);
+		repository.addTask(task3);
+		TaskAnnotationParser parser = new TaskAnnotationParser();
+		parser.parse(repository);
 
 		Graph<LatchTask<?, ?>> graph = new Graph<>();
-		graph.add(Collections.singleton(task1));
-		graph.add(Collections.singleton(task2));
-		graph.add(Collections.singleton(task3));
+		graph.add(repository.getAllTasks());
 
 		scheduler.schedule(graph);
 

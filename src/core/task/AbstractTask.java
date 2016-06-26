@@ -115,4 +115,24 @@ public abstract class AbstractTask<I, O> {
 		}
 	}
 
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("Task - ").append(id).append(" [\n");
+		sb.append("Type ").append(type).append("\n");
+		sb.append("State ").append(state).append("\n");
+		sb.append("Upstream [ ");
+		for (AbstractTask<?, ?> task : getUpstreamTasks()) {
+			sb.append(task.getId()).append(" ");
+		}
+		sb.append("]\n");
+		sb.append("Downstream [ ");
+		for (AbstractTask<?, ?> task : getDownstreamTasks()) {
+			sb.append(task.getId()).append(" ");
+		}
+		sb.append("]\n");
+		sb.append("]");
+		return sb.toString();
+	}
+
 }
