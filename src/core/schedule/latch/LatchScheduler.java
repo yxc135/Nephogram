@@ -77,6 +77,7 @@ public class LatchScheduler implements Scheduler<LatchTask<?, ?>> {
 			return true;
 		} catch (InterruptedException e) {
 			// time out, cancelled by timer
+			timer.cancel();
 			return false;
 		}
 	}

@@ -68,6 +68,8 @@ public abstract class LatchTask<I, O> extends AbstractTask<I, O> {
 		case Failed:
 			if (task.getType() == Type.Critical) {
 				fail(new UpstreamFailedException());
+				// make scheduler aware of this
+				scheduler.schedule(this);
 			} else {
 				updateLatch(task);
 			}
