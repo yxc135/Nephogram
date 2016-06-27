@@ -1,12 +1,13 @@
 package tutorial;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import toolkit.annotation.Task;
 import toolkit.annotation.TaskAnnotationParser;
-import toolkit.annotation.TaskRepository;
 import core.graph.Graph;
 import core.schedule.latch.LatchScheduler;
 import core.schedule.latch.LatchTask;
@@ -48,10 +49,11 @@ public class AnnotationUsageExample {
 			}
 		};
 
-		TaskRepository<LatchTask<?, ?>> repository = new TaskRepository<>();
-		repository.add(task1);
-		repository.add(task2);
-		repository.add(task3);
+		Collection<LatchTask<?, ?>> tasks = new HashSet<>();
+		tasks.add(task1);
+		tasks.add(task2);
+		tasks.add(task3);
+		
 		TaskAnnotationParser<LatchTask<?, ?>> parser = new TaskAnnotationParser<LatchTask<?, ?>>() {
 			@Override
 			public void addDependency(LatchTask<?, ?> upstreamTask,
@@ -60,10 +62,7 @@ public class AnnotationUsageExample {
 				downstreamTask.addToUpstream(upstreamTask);
 			}
 		};
-		parser.parse(repository);
-
-		Graph<LatchTask<?, ?>> graph = new Graph<>();
-		graph.add(repository.getAll());
+		Graph<LatchTask<?, ?>> graph = parser.parse(tasks);
 
 		scheduler.schedule(graph);
 
