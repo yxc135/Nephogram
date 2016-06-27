@@ -5,8 +5,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import toolkit.annotation.Task;
-import toolkit.annotation.latch.TaskAnnotationParser;
-import toolkit.annotation.latch.TaskRepository;
+import toolkit.annotation.TaskAnnotationParser;
+import toolkit.annotation.TaskRepository;
 import core.graph.Graph;
 import core.schedule.latch.LatchScheduler;
 import core.schedule.latch.LatchTask;
@@ -48,15 +48,22 @@ public class AnnotationUsageExample {
 			}
 		};
 
-		TaskRepository repository = new TaskRepository();
-		repository.addTask(task1);
-		repository.addTask(task2);
-		repository.addTask(task3);
-		TaskAnnotationParser parser = new TaskAnnotationParser();
+		TaskRepository<LatchTask<?, ?>> repository = new TaskRepository<>();
+		repository.add(task1);
+		repository.add(task2);
+		repository.add(task3);
+		TaskAnnotationParser<LatchTask<?, ?>> parser = new TaskAnnotationParser<LatchTask<?, ?>>() {
+			@Override
+			public void addDependency(LatchTask<?, ?> upstreamTask,
+					LatchTask<?, ?> downstreamTask) {
+				upstreamTask.addToDownstream(downstreamTask);
+				downstreamTask.addToUpstream(upstreamTask);
+			}
+		};
 		parser.parse(repository);
 
 		Graph<LatchTask<?, ?>> graph = new Graph<>();
-		graph.add(repository.getAllTasks());
+		graph.add(repository.getAll());
 
 		scheduler.schedule(graph);
 
@@ -69,5 +76,4 @@ public class AnnotationUsageExample {
 		System.out.println(task2.getOutput());
 		System.out.println(task3.getOutput());
 	}
-
 }

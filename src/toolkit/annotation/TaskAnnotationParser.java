@@ -1,22 +1,23 @@
-package toolkit.annotation.latch;
+package toolkit.annotation;
 
 import java.lang.reflect.Field;
 
-import toolkit.annotation.Task;
 import toolkit.annotation.exception.AnnotationParseException;
 import toolkit.annotation.exception.UndefinedTaskException;
-import core.schedule.latch.LatchTask;
+import core.task.AbstractTask;
 
-public class TaskAnnotationParser {
+public abstract class TaskAnnotationParser<T extends AbstractTask<?, ?>> {
 
-	public void parse(TaskRepository repository)
+	public abstract void addDependency(T upstreamTask, T downstreamTask);
+
+	public void parse(TaskRepository<T> repository)
 			throws AnnotationParseException {
-		for (LatchTask<?, ?> task : repository.getAllTasks()) {
+		for (T task : repository.getAll()) {
 			parse(task, repository);
 		}
 	}
 
-	private void parse(LatchTask<?, ?> task, TaskRepository repository)
+	private void parse(T task, TaskRepository<T> repository)
 			throws AnnotationParseException {
 		Class<?> clazz = task.getClass();
 		Field[] fields = clazz.getDeclaredFields();
@@ -24,13 +25,12 @@ public class TaskAnnotationParser {
 			if (field.isAnnotationPresent(Task.class)) {
 				Task taskAnnotation = field.getAnnotation(Task.class);
 				String taskId = taskAnnotation.id();
-				LatchTask<?, ?> upstreamTask = repository.getTask(taskId);
+				T upstreamTask = repository.get(taskId);
 				if (upstreamTask == null) {
 					throw new AnnotationParseException(
 							new UndefinedTaskException());
 				}
-				upstreamTask.addToDownstream(task);
-				task.addToUpstream(upstreamTask);
+				addDependency(upstreamTask, task);
 				boolean accessible = field.isAccessible();
 				field.setAccessible(true);
 				try {
